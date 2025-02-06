@@ -7,6 +7,7 @@ from craft import CRAFT
 from collections import OrderedDict
 from skimage import io
 from craft_utils import adjustResultCoordinates, getDetBoxes
+import os
 
 
 def normalizeMeanVariance(
@@ -402,8 +403,18 @@ if __name__ == "__main__":
   image = Image.open(image_file)
   image_draw = ImageDraw.Draw(image)
 
-  for bbox in horizontal_list_agg[0]:
-    x_min, x_max, y_min, y_max = bbox
-    image_draw.rectangle(((x_min, y_min), (x_max, y_max)), outline="red", width=2)
+  # Create a directory to save cropped images
+  output_dir = "assets/cropped_text"
+  os.makedirs(output_dir, exist_ok=True)
 
-  image.save("assets/khmer_output.jpg")
+  # Crop and save individual text boxes
+  for i, bbox in enumerate(horizontal_list_agg[0]):
+      x_min, x_max, y_min, y_max = bbox
+      # Crop the image using the bounding box
+      cropped_image = image.crop((x_min, y_min, x_max, y_max))
+      # Save the cropped image
+      cropped_image.save(os.path.join(output_dir, f"text_box_{i + 1}.jpg"))
+      image_draw.rectangle(((x_min, y_min), (x_max, y_max)), outline="red", width=2)
+      image.save("assets/khmer_output.jpg")
+
+
